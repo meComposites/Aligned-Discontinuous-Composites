@@ -5,8 +5,11 @@ toughness_method='average toughness method';
 
 init_num_clusters=100;
 
-% Fibre_stiffness=bsxfun(@rdivide,Xfibres(:,:,2),deltaEpsilon);
-Fibre_stiffness=RVE_data.Pre_defect_stiffness;
+if isempty(RVE_data.Pre_defect_stiffness)==1
+    Fibre_stiffness=bsxfun(@rdivide,Xfibres(:,:,2),deltaEpsilon);
+else
+    Fibre_stiffness=RVE_data.Pre_defect_stiffness;
+end
 
 RVE_fibre_type=RVE_data.RVE_fibre_type;
 
@@ -176,10 +179,10 @@ for s=2:dim_s
                         nc_border=sum(sum(bsxfun(@times,surrounding_fibres,RVE_fibre_type)));
                         ng_border=sum(sum(bsxfun(@times,surrounding_fibres,(1-RVE_fibre_type))));
                         
-                        Giicm=(nc_border*(dc^2)*Gcrit_c+ng_border*(dg^2)*Gcrit_g)/(nc_border*(dc^2)+ng_border*(dg^2));
+                        Gicm=(nc_border*(dc^2)*Gcrit_c+ng_border*(dg^2)*Gcrit_g)/(nc_border*(dc^2)+ng_border*(dg^2));
                         
                     case 'average toughness method'
-                        Giicm=Vc*Gcrit_c+(1-Vc)*Gcrit_g;
+                        Gicm=Vc*Gcrit_c+(1-Vc)*Gcrit_g;
                 end
                 
                 %% strain energy release rate calcs
@@ -195,7 +198,7 @@ for s=2:dim_s
                 Jpp=real(Xmax^2/Enom * 32/pi^3 * aeq .* (log( 1./cosd(90.* Xcrit./(Xmax) ) )));
                 
                 % Calculate reserve factor
-                reserve_factor(s,d,k)=Giicm/Jpp;
+                reserve_factor(s,d,k)=Gicm/Jpp;
                 
             end
         end
@@ -227,6 +230,8 @@ if min(min(min(reserve_factor)))>=1
     RVE_data.Cluster_size_record=n_rows*n_columns;
     RVE_data.Damage_state_at_failure=Damage_state(:,:,Final_critical_strain_increment);
 end
+
+RVE_data.Gcrit=Gicm;
 
 % disabled for FAST version
 % store results in RVE data structure

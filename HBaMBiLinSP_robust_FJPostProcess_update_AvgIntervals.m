@@ -1,6 +1,8 @@
-function [E,deInt,xInt,yInt,assert_flag] = ...
-    HBaMBiLinSP_robust_FJPostProcess_update_AvgIntervals(SumE,DeltaE,SumT,DeltaT,tI,Lo,SI,GiicI,GI,DeltaSigma_min)
+function [E,deInt,xInt,yInt,assert_flag] = HBaMBiLinSP_robust_FJPostProcess_update_AvgIntervals(SumE,DeltaE,SumT,DeltaT,tI,Lo,SI,GiicI,GI,DeltaSigma_min)
 assert_flag=0;
+if DeltaT==0
+    DeltaT=1E-8;
+end
 % Lo=Lo*2;
 %FE in paper (Fig.5a)
 %HBaMBiLinSP(200000,40000,0.2,0.06,0.01,2.0,80,2.0,1500,100);
@@ -98,13 +100,13 @@ try
         % also calculated PsiR=PsiR_guess, tauR_guess, and L_2R=L_2R_guess
     catch
         %     error('fzero produces error for @transition_12_212 when default input range is used')
-%         warning('fzero cannot converge for @transition_12_212 when default input range used. Lower initial guess slightly increased')
+        % warning('fzero cannot converge for @transition_12_212 when default input range used. Lower initial guess slightly increased')
         tau0_End12=abs(fzero(@transition_12_212,(tau0_1_12+1E-10)*SI/tauL(1),opts));
         
     end
     
     if abs(tau0_End12)==Inf
-%         warning('tau0_End12 gives Inf: no convergence')
+        % warning('tau0_End12 gives Inf: no convergence')
         disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
     elseif isnan(tau0_End12)==1
 %         warning('tau0_End12 gives NaN or -NaN: no convergence')
@@ -116,7 +118,7 @@ try
         assert_flag=1;
         assert(isnan(tau0_End12)~=1);       
     elseif isreal(tau0_End12)~=1
-%         warning('tau0_End12 gives complex argument: no convergence')
+        % warning('tau0_End12 gives complex argument: no convergence')
         disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
     end
     
@@ -141,7 +143,7 @@ try
             % calculating tau0 for transtion between [1 2] and [1 2 3]:
             tau0_End12=fzero(@transition_12_123,[tau0_1_12,SI],opts);
         catch
-%             warning('fzero produces NaN for @transition_12_123 when default input range used')
+            % warning('fzero produces NaN for @transition_12_123 when default input range used')
             if isnan(fzero(@transition_12_123,SI,opts))==1
                 tau0_End12=fzero(@transition_12_123,tau0_1_12,opts);
             else
@@ -150,13 +152,13 @@ try
         end
         
         if abs(tau0_End12)==Inf
-%             warning('tau0_End12 gives Inf: no convergence')
+            % warning('tau0_End12 gives Inf: no convergence')
             disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
         elseif isnan(tau0_End12)==1
-%             warning('tau0_End12 gives NaN or -NaN: no convergence')
+            % warning('tau0_End12 gives NaN or -NaN: no convergence')
             disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
         elseif isreal(tau0_End12)~=1
-%             warning('tau0_End12 gives complex argument: no convergence')
+            % warning('tau0_End12 gives complex argument: no convergence')
             disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
         end
         
@@ -205,12 +207,12 @@ try
             tauL(k+1,1)=fzero(@within_12,tauL_int_guess(k),opts);
         catch
             %         error('fzero produces error for @within_12 when default input range is used')
-%             warning('fzero produces NaN for @within_12 when default input range used')
+            % warning('fzero produces NaN for @within_12 when default input range used')
             tauL(k+1,1)=fzero(@within_12,tauL_int_guess(k)-(((tauL_End12-tauL(1))/n_12)/2),opts);
         end
         
         if abs(tauL(k+1,1))==Inf
-%             warning(['tauL(' num2str(k+1) ',1) gives Inf: no convergence'])
+            % warning(['tauL(' num2str(k+1) ',1) gives Inf: no convergence'])
             disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
         elseif isnan(tauL(k+1,1))==1
 %             warning(['tauL(' num2str(k+1) ',1) gives NaN or -NaN: no convergence - short fibre strategy used'])
@@ -221,7 +223,7 @@ try
             assert_flag=1;
             assert(isnan(tauL(k+1,1))~=1);
         elseif isreal(tauL(k+1,1))~=1
-%             warning(['tauL(' num2str(k+1) ',1) gives complex argument: no convergence'])
+            % warning(['tauL(' num2str(k+1) ',1) gives complex argument: no convergence'])
             disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
         end
         
@@ -263,7 +265,7 @@ try
                 % Calculating tauL_End212
                 tauL_End212=fzero(@within_212,[tauL_min,SI],opts);
             catch
-%                 warning('fzero produces NaN for @within_212 when default input range used')
+                % warning('fzero produces NaN for @within_212 when default input range used')
                 if isnan(fzero(@within_212,mean([tauL_min,SI]),opts))==1
                     tauL_End212=fzero(@within_212,tauL_min,opts);
                 else
@@ -272,13 +274,13 @@ try
             end
             
             if abs(tauL_End212)==Inf
-%                 warning('tauL_End212 gives Inf: no convergence')
+                % warning('tauL_End212 gives Inf: no convergence')
                 disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
             elseif isnan(tauL_End212)==1
-%                 warning('tauL_End212 gives NaN or -NaN: no convergence')
+                % warning('tauL_End212 gives NaN or -NaN: no convergence')
                 disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
             elseif isreal(tauL_End212)~=1
-%                 warning('tauL_End212 gives complex argument: no convergence')
+                % warning('tauL_End212 gives complex argument: no convergence')
                 disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
             end
             
@@ -299,7 +301,7 @@ try
             try
                 tau0_End=fzero(@transition_212_2123,[tau0_End12,SI],opts);
             catch
-%                 warning('fzero produces NaN for @transition_212_2123 when default input range used')
+                % warning('fzero produces NaN for @transition_212_2123 when default input range used')
                 if isnan(fzero(@transition_212_2123,SI,opts))==1
                     tau0_End=fzero(@transition_212_2123,tau0_End12,opts);
                 else
@@ -311,13 +313,13 @@ try
             end
             
             if abs(tau0_End)==Inf
-%                 warning('tau0_End gives Inf: no convergence')
+                % warning('tau0_End gives Inf: no convergence')
                 disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
             elseif isnan(tau0_End)==1
-%                 warning('tau0_End gives NaN or -NaN: no convergence')
+                % warning('tau0_End gives NaN or -NaN: no convergence')
                 disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
             elseif isreal(tau0_End)~=1
-%                 warning('tau0_End gives complex argument: no convergence')
+                % warning('tau0_End gives complex argument: no convergence')
                 disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
             end
             
@@ -363,18 +365,18 @@ try
                 tauL(n_12+k+1,1)=fzero(@within_212,tauL_int_guess(k),opts);
             catch
                 %             error('fzero produces error for @within_212 default input range is used')
-%                 warning('fzero produces NaN for @within_212 when default input range used')
+                % warning('fzero produces NaN for @within_212 when default input range used')
                 tauL(n_12+k+1,1)=fzero(@within_212,tauL_int_guess(k)-((SI-tauL_End212)/n_212)/2,opts);
             end
             
             if abs(tauL(n_12+k+1,1))==Inf
-%                 warning(['tauL(' num2str(n_12+k+1) ',1) gives Inf: no convergence'])
+                % warning(['tauL(' num2str(n_12+k+1) ',1) gives Inf: no convergence'])
                 disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
             elseif isnan(tauL(n_12+k+1,1))==1
-%                 warning(['tauL(' num2str(n_12+k+1) ',1) gives NaN or -NaN: no convergence'])
+                % warning(['tauL(' num2str(n_12+k+1) ',1) gives NaN or -NaN: no convergence'])
                 disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
             elseif isreal(tauL(n_12+k+1,1))~=1
-%                 warning(['tauL(' num2str(n_12+k+1) ',1) gives complex argument: no convergence'])
+                % warning(['tauL(' num2str(n_12+k+1) ',1) gives complex argument: no convergence'])
                 disp([num2str(SumE) ',' num2str(-1*DeltaE) ',' num2str(SumT) ',' num2str(-1*DeltaT) ',' num2str(tI) ',' num2str(Lo) ',' num2str(SI) ',' num2str(GiicI) ',' num2str(GI) ',' num2str(DeltaSigma_min)])
             end
             

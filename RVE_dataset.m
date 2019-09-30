@@ -50,6 +50,7 @@ classdef RVE_dataset
         Damage_state_at_failure % the damage state of all fibres at the critical strain index (at failure)
         Fibre_stagger_distance % the stagger distance of the fibres from the HiPerDiF method
         
+        
         % failure mode identification parameters
         Fragmentation_record % records interface # that led to fragmentation and at what strain
         Failure_mode_record

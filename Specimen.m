@@ -16,6 +16,7 @@ classdef Specimen
         Pseudo_ductile_strain % (%)
         Ultimate_strength %(MPa)
         Yield_strength % 0.1% strain offset yield strength (MPa)
+        Max_load_drop % maximum load drop in the final stress strain curve (for optimisation)
         Critical_RVE_index % RVE index for the RVE who's failure results in catastrophic failure of the specimen
         Critical_cluster % critical cluster resulting in fracture of specimen
         Critical_cluster_loc % rows and columns (1st and 2nd column respectively) for each fibre position in critical cluster
@@ -29,6 +30,7 @@ classdef Specimen
         Debonding_failures % records the number of debonds per fibre
         Softening_failures % records the number of interfaces that soften due to matrix damage
         Fibre_failures % records the number of completely failed fibres 
+        Gcrit % specimen fracture toughness at critical RVE
     end
     
     methods

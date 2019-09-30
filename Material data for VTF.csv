@@ -1,0 +1,20 @@
+Fibre manufacturer,Fibre name,Fibre type,"Young's Modulus, E (GPa)","Reference strength, X_f (MPa)","Weibull modulus, m","Weibull reference length , l_w (mm)","Diameter, d (um)",Reference,Comments
+TorayCA,T1000GB,PAN-CF,291,5690,5.9,1,5.03,{Naito2007},"Unsure about weibull reference length. Gauge length for experiments is 25mm, but mean strength formula states (?_f ) ?=?_0 L^((-1)/m_f ) ?(1+1/m_f ), so it's thought these values are quoted for a fibre length of 1mm? (actually seems quite common to do this {Paiva2001})"
+Mitsubishi,K13D,Pitch-CF,940,3210,4.2,1,11.72,{Naito2007},
+NGF,XN-05,Pitch-CF,41,1100,7.9,1,9.64,{Naito2007},
+TorayCA,T300,PAN-CF,221,3200,7,1,7.39,{Naito2007},
+TorayCA,M40B,PAN-CF,359,2470,6.8,1,7.05,{Naito2007},
+TorayCA,M60JB,PAN-CF,521,3380,5.8,1,5.13,{Naito2007},
+NGF,XN-90,Pitch-CF,876,3460,5,1,10.03,{Naito2007},
+Amoco,P120J,Pitch-CF,820,3760,3.85,1,9.6,"{Paiva2001},{Montes-Moran2001}",Untreated fibre properties taken in all cases
+Amoco,P75S,Pitch-CF,517,2700,6.453,1,5.5,"{Paiva2001}, {Wessel2004}",
+Clemson Uni.,Ribbon,Pitch-CF,,5410,4.037,1,10.9 / 37,{Paiva2001},
+Sigri Great Lakes,C320,PAN-CF,230,4990,5.89,1,3.9,"{Paiva2001},{Bismarck2000}",
+TorayCA,T800H,PAN-CF,294,5400,5.5,1,5,"{Bertrand},{Toray2018}",
+Tenax,HTA5131,PAN-CF,238,4749 / 4391 (with gamma),5.65,1,7,"{Pickering1999},{Toho2011}",doesn't use gamma function to scale strength data - name changed to Tenax HTA40
+Tenax,C124,PAN-CF,225,4344,5.7119,25,7,{Finley2017},
+Vetrotex,C100,E-glass,73,2400,5.76,25,7,"{Finley2017}, {Yu2015}",
+Owens Corning,FliteStrand S ZT,S-glass,88,1520 / 1378 (with gamma),4,50,9,{Wisnom2016a},
+Etcheverrt,GF,E-glass,46,1556 / 1379 (with gamma),2.36,25,26.8,{Etcheverry2012},
+,,,,,,,,,
+,,,,,,,,,

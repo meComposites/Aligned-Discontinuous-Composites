@@ -1,44 +1,81 @@
-%% Wrapper function for Virtual testing Framework, used for journal paper titled "The influence of variability and defects on the mechanical performance of tailorable composites". Code created by James M. Finley, Joel Henry, and Soraia Pimenta.
-% Press play to run a working example of the code. Inputs can be modified
-% here too (see below). More detailed modifications to the code (i.e. to
-% modify fibre-type arrangements can be found in
-% "Specimen_Microscale_EoR_Defects_FailureModes_General.m", while plotting
-% commands for the het maps can be found in
-% "PostProcess_EffectsOfRandomness_Results.m"
+%% A Bayesian optimisation routine for maximising the mechanical performance of aligned discontiuous composites
+% current setup has a large amount of observed data, therefore will take
+% some time (and RAM) to run. Minimum 16GB RAM recommended for use.
+% James M. Finley, 10th September 2019, Imperial College London
+function results = Start_here()
+
+%% select primary objective objective function to optimise (select one from below)
+% objective_function_1='Initial_stiffness';
+objective_function_1='Ultimate_strain';
+% objective_function_1='Pseudo_ductile_strain';
+% objective_function_1='Ultimate_strength';
+% objective_function_1='Yield_strength';
 
 
-function Specimen_dataset = Start_here()
-% running this code will create an object called specimen_dataset, which
-% contains all data about the virtual specimen, including stress-strain
-% curves etc. (see "Specimen.m" for details on the class definition and
-% properties of the virtual specimen). A .mat file is also created
-% conatining the specimen_dataset object (for running on a HPC cluster).
+%% select secondary objective function to optimise (select one from below) - multi-objective optimisation is RAM intensive, therefore suggested to only use on a HPC
+objective_function_2=''; % select this option single-objective optimisation of primary objective function
+% objective_function_2='Initial_stiffness';
+% objective_function_2='Ultimate_strain';
+% objective_function_2='Pseudo_ductile_strain';
+% objective_function_2='Ultimate_strength';
+% objective_function_2='Yield_strength';
 
-repeat_counter=1; % For when running repeat runs, to give unique ID to results
 
-material_system=1; % 1 = HMC/EG/EP (intermingled), 2 = HSC/EP, 3 = HSC/PP
+%% set optimisation parameters
+number_of_iterations=1; % number of iterations of optimiser (or number of iterations per multi-objective potimisation slice if using multi-objective optimisation)
+exploration_ratio=50; % exploration ratio (in percent) 
 
-lf=3000; % fibre length (microns)
-lspecimen=50000; % specimen length (microns)
+number_of_MOBO_slices=40; % number of multi-objective optimisation slices (different slices defined by the modified epsilon constraint method) - multi-objective optimisation only
 
-n_rows=80; % no. fibres in y-dimension of cross-section
-n_columns=80; % no. fibres in x-direction of cross-section
 
-pc_fragmented = 0; % percetange of fragmented carbon fibres (0 - 100 %)
-pc_vacancy = 0; % percentage of carbon fibres with fibre vacancy defects (0 - 100 %) 
-p_interface = 0; %percentage of defective interactions (0 - 100 %)
-pg_fragmented = 0; % percetange of fragmented glass fibres (0 - 100 %)
-pg_vacancy = 0; % percentage of glass fibres with fibre vacancy defects (0 - 100 %) 
+%% configure the optimiser - DON'T MODIFY PAST THIS POINT
+% check correct objective function names used
+switch objective_function_1
+    case{'Initial_stiffness'}
+        objective_function_1_flag='wInitS';
+    case{'Ultimate_strain'}
+        objective_function_1_flag='wUltStrain';
+    case{'Pseudo_ductile_strain'}
+        objective_function_1_flag='wPdStrain';
+    case{'Ultimate_strength'}
+        objective_function_1_flag='wUltStrength';
+    case{'Yield_strength'}
+        objective_function_1_flag='wYStrength';
+    otherwise
+        error("incorrect objective function 1 name. Please choose from 'Initial_stiffness', 'Ultimate_strain', 'Pseudo_ductile_strain', 'Ultimate_strength', or 'Yield_strength'.");
+end
 
-misalignment_case = 0; % 0 = no misalignment, 1 = HiPerDiF misalignment, 2 = Sanadi misalignment (see Figure 2b)
+single_multi_flag='MOBO'; % treat as multi-objective optimisation campaign unless otherwise stated
+switch objective_function_2
+    case ''
+        single_multi_flag='SOBO'; % if no second objective function, treat as single-objective Bayesian optimisation (SOBO)
+    case{'Initial_stiffness'} % set upper and lower constraint range
+        e_constraint_min=0;
+        e_constraint_max=6E+06;
+    case {'Ultimate_strain','Pseudo_ductile_strain'}
+        e_constraint_min=0;
+        e_constraint_max=2000;
+    case {'Ultimate_strength','Yield_strength'}
+        e_constraint_min=0;
+        e_constraint_max=4.5;
+    otherwise
+        error("incorrect objective function 2 name. Please choose from 'Initial_stiffness', 'Ultimate_strain', 'Pseudo_ductile_strain', 'Ultimate_strength', or 'Yield_strength', or for single-objective optimisation."); % error if wrong objective function name
+end
 
-rng_switch = 1; % 0 = random number generator starts with repeat counter setting, 1 = mersenne twister rng (for HPC), otherwise, rng(other number)
-
-failure_modes_switch = 0; % 1 = output details for damage events (used for damage event heat maps) 0 = suppress output
-
-parallelisation_switch = 1; % 1 = use multiple CPUs for parallel calculation of RVEs 0 = serial calculation of RVEs
-
-% Run the VTF
-Specimen_dataset = Specimen_Microscale_EoR_Defects_FailureModes_General(repeat_counter,material_system,lf,lspecimen,n_rows,n_columns,pc_fragmented,p_interface,pc_vacancy,pg_fragmented,p_interface,pg_vacancy,misalignment_case,rng_switch,failure_modes_switch,parallelisation_switch);
+%% run the optimiser 
+switch single_multi_flag
+    case 'SOBO' 
+        results = Create_VTF_BayesianOptimizationObject(single_multi_flag,'single',objective_function_1,number_of_iterations,exploration_ratio,0,0,0,0,0,0,1); % run single-objective optimisation and store results
+        gather_VTF_data('pristine') % update observed data
+    case 'MOBO' %- very RAM intensive
+        for ii=1:number_of_MOBO_slices % run a number of optimisations for multi-objective design case
+            Create_VTF_BayesianOptimizationObject_eConstraint_hybrid(objective_function_2,e_constraint_min,number_of_MOBO_slices,e_constraint_max,objective_function_1_flag,single_multi_flag,'eConstraintHybrid',batch_index,number_of_iterations,exploration_ratio,0,0,0,0,0,0,1);
+        end  
+        % find results saved in your directory. 
+        gather_VTF_data('pristine') % update observed data
+        results=load('pristine_VTF_data.mat'); % load observed data
+        figure()
+        plot(results.(objective_function_2),results.(objective_function_1),'rx') % show observed data for the two selected objective functions
+end
 
 end
